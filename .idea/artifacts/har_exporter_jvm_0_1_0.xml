@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="har-exporter-jvm-0.1.0">
+    <output-path>$PROJECT_DIR$/har-exporter/build/libs</output-path>
+    <root id="archive" name="har-exporter-jvm-0.1.0.jar">
+      <element id="module-output" name="har-exporter.har-exporter.jvmMain" />
+    </root>
+  </artifact>
+</component>

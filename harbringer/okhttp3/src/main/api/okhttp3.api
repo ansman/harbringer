@@ -1,0 +1,4 @@
+public final class se/ansman/harbringer/okhttp3/HarbringerOkHttp3 {
+	public static final fun addHarbringer (Lokhttp3/OkHttpClient$Builder;Lse/ansman/harbringer/Harbringer;)Lokhttp3/OkHttpClient$Builder;
+}
+
