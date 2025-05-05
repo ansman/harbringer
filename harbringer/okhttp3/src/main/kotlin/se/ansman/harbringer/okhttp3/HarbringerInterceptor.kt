@@ -1,3 +1,4 @@
+@file:JvmName("HarbringerOkHttp3")
 package se.ansman.harbringer.okhttp3
 
 import okhttp3.*

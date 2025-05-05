@@ -1,0 +1,52 @@
+name: Build Gradle
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '22'
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Run Checks
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: check --continue --stacktrace --scan
+
+  deploy-snapshot:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: checks
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '22'
+
+    - name: Deploy Snapshot
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: publishSnapshot --no-configuration-cache --stacktrace
+      env:
+        ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+        ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}

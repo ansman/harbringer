@@ -7,7 +7,7 @@ import se.ansman.harbringer.Harbringer
 /**
  * A storage for storing request and response entries.
  *
- * This class is thread safe and can be accessed from multiple threads.
+ * This class must be thread safe and will be accessed from multiple threads.
  *
  * Please note that *all* functions and properties can perform I/O so access should not be done on a UI thread.
  *
@@ -15,10 +15,23 @@ import se.ansman.harbringer.Harbringer
  * @see InMemoryHarbringerStorage
  */
 interface HarbringerStorage {
-    /** The number of bytes stored in this storage. This can return -1 if this storage does not track the disk usage. */
+    /**
+     * The number of bytes stored in this storage. This can return -1 if this storage does not track the disk usage.
+     * This value can be an approximation.
+     *
+     * Calling this property should be fast and cached as it will be called frequently.
+     *
+     * Pending entries should not be included in this value.
+     */
     val bytesStored: Long
 
-    /** The number of entries stored in this storage. */
+    /**
+     * The number of entries stored in this storage.
+     *
+     * This does not include pending entries.
+     * 
+     * Calling this property should be fast and cached as it will be called frequently.
+     */
     val entriesStored: Int
 
     /** Returns a set of all the IDs of the entries in the storage. */

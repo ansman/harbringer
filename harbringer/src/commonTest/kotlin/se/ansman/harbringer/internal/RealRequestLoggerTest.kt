@@ -3,18 +3,19 @@ package se.ansman.harbringer.internal
 import assertk.assertThat
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.isEqualTo
-import assertk.assertions.isSameInstanceAs
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okio.Buffer
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
+import okio.Sink
 import okio.fakefilesystem.FakeFileSystem
 import se.ansman.harbringer.Harbringer
 import se.ansman.harbringer.Harbringer.Headers
 import se.ansman.harbringer.Harbringer.Request
-import se.ansman.harbringer.Scrubber
+import se.ansman.harbringer.scrubber.Scrubber
 import se.ansman.harbringer.storage.FileSystemHarbringerStorage
+import se.ansman.requestlogger.internal.VERSION
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.random.Random
 import kotlin.test.Test
@@ -23,7 +24,7 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class, ExperimentalAtomicApi::class, ExperimentalSerializationApi::class)
 class RealRequestLoggerTest {
-    private var scrubber: (Request) -> Scrubber = { Scrubber.noScrubbing }
+    private var scrubber: Scrubber = Scrubber.noScrubbing
     private val clock = TestClock()
     private val json = Json {
         prettyPrint = true
@@ -35,13 +36,22 @@ class RealRequestLoggerTest {
         json = json,
         rethrowErrors = true
     )
-//    val storage = InMemoryHarbringerStorage()
+
+    //    val storage = InMemoryHarbringerStorage()
     private val logger = RealHarbringer(
         storage = storage,
         maxRequests = 3,
         maxDiskUsage = 1024 * 1024, // 1MB
         clock = clock,
-        scrubber = { scrubber(it) },
+        scrubber = object : Scrubber {
+            override fun scrubRequest(request: Request): Request? = scrubber.scrubRequest(request)
+            override fun scrubRequestBody(request: Request, sink: Sink): Sink = scrubber.scrubRequestBody(request, sink)
+            override fun scrubResponse(request: Request, response: Harbringer.Response): Harbringer.Response? =
+                scrubber.scrubResponse(request, response)
+
+            override fun scrubResponseBody(request: Request, sink: Sink): Sink =
+                scrubber.scrubResponseBody(request, sink)
+        },
         enabled = true,
     )
 
@@ -67,8 +77,8 @@ class RealRequestLoggerTest {
               "log": {
                 "version": "1.2",
                 "creator": {
-                  "name": "se.ansman.request-logger",
-                  "version": "0.1.0",
+                  "name": "Harbringer",
+                  "version": "$VERSION",
                   "comment": "Exported at 2025-04-27T20:59:12.123Z"
                 },
                 "entries": [{
@@ -225,8 +235,8 @@ class RealRequestLoggerTest {
               "log": {
                 "version": "1.2",
                 "creator": {
-                  "name": "se.ansman.request-logger",
-                  "version": "0.1.0",
+                  "name": "Harbringer",
+                  "version": "$VERSION",
                   "comment": "Exported at 2025-04-27T20:59:12.123Z"
                 },
                 "entries": [{
@@ -373,21 +383,18 @@ class RealRequestLoggerTest {
             ),
         )
 
-        scrubber = { req ->
-            assertThat(req).isSameInstanceAs(request)
-            Scrubber(
-                request = Scrubber.request(
-                    queryParameter = Scrubber.queryParameter("apiKey"),
-                    header = Scrubber.header("authorization"),
-                    bodyParameter = Scrubber.bodyParameter("sensitive", replacement = "redacted")
-                ),
-                requestBody = Scrubber.replaceBody("Redacted".encodeUtf8()),
-                response = Scrubber.response(
-                    header = Scrubber.header("sensitive"),
-                ),
-                responseBody = Scrubber.discardBody(),
-            )
-        }
+        scrubber = Scrubber(
+            request = Scrubber.request(
+                queryParameter = Scrubber.queryParameter("apiKey"),
+                header = Scrubber.header("authorization"),
+                bodyParameter = Scrubber.bodyParameter("sensitive", replacement = "redacted")
+            ),
+            requestBody = Scrubber.replaceBody("Redacted".encodeUtf8()),
+            response = Scrubber.response(
+                header = Scrubber.header("sensitive"),
+            ),
+            responseBody = Scrubber.discardBody(),
+        )
 
         val id = logger.record(request)!!
             .apply {

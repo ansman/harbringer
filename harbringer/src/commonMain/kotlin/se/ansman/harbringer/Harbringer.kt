@@ -5,8 +5,10 @@ import okio.IOException
 import okio.Sink
 import okio.Source
 import se.ansman.harbringer.internal.RealHarbringer
+import se.ansman.harbringer.scrubber.Scrubber
 import se.ansman.harbringer.storage.HarbringerStorage
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A logger for HTTP requests and responses.
@@ -71,7 +73,7 @@ interface Harbringer {
      *
      * This will not delete any in-flight requests.
      */
-    fun clear() = getIds().forEach { deleteEntry(it) }
+    fun clear()
 
     /**
      * Records a request and returns a [PendingRequest] that can be used to record the response.
@@ -81,12 +83,16 @@ interface Harbringer {
     fun record(request: Request): PendingRequest?
 
     /**
-     * Exports the logged requests to a HAR archive to the given [sink].
+     * Exports all entries to the [sink].
      *
+     * The sink does not need to be buffered, as this will be done automatically.
+     *
+     * @param sink the [Sink] to write the exported data to.
+     * @param format the format to export the data in, defaults to [ExportFormat.Har].
      * @throws IOException if an error is thrown.
      */
     @Throws(IOException::class)
-    fun exportHarArchive(sink: Sink)
+    fun exportTo(sink: Sink, format: ExportFormat = ExportFormat.Har)
 
     companion object {
         /**
@@ -98,9 +104,9 @@ interface Harbringer {
          * @param maxDiskSize The approximate max size of the storage in bytes. If this is exceeded, the oldest requests
          *   will be deleted. In-flight requests are not counted towards this limit, so more data can be stored temporarily.
          * @param enabled If `true` (default), requests will be stored. If `false`, requests will not be stored.
-         * @param scrubber A lambda that returns a [Scrubber] for the given [Request]. This can be used to redact sensitive data.
+         * @param scrubber A lambda that returns a [se.ansman.harbringer.scrubber.Scrubber] for the given [Request]. This can be used to redact sensitive data.
          * @see se.ansman.harbringer.storage.FileSystemHarbringerStorage
-         * @see Scrubber
+         * @see se.ansman.harbringer.scrubber.Scrubber
          */
         @JvmName("create")
         @JvmOverloads
@@ -109,7 +115,7 @@ interface Harbringer {
             maxRequests: Int,
             maxDiskSize: Int,
             enabled: Boolean = true,
-            scrubber: (Request) -> Scrubber = { Scrubber.noScrubbing },
+            scrubber: Scrubber = Scrubber.noScrubbing,
         ): Harbringer = RealHarbringer(
             storage = storage,
             maxRequests = maxRequests,
@@ -119,25 +125,64 @@ interface Harbringer {
         )
     }
 
+    /** What format to export the data in. */
+    sealed class ExportFormat {
+        /**
+         * Export the data in the [HAR format](https://en.wikipedia.org/wiki/HAR_(file_format)).
+         *
+         * This format is used by many tools for analyzing HTTP requests and can be imported into tools like
+         * [Charles Proxy](https://www.charlesproxy.com/) and [Proxyman](https://proxyman.io/).
+         */
+        data object Har : ExportFormat()
+    }
+
+    /**
+     * A [PendingRequest] represents an in-flight request that has not yet been completed.
+     *
+     * You can use [requestBody] and [responseBody] to write the request and response bodies, respectively.
+     *
+     * You must call [onComplete] or [onFailed] when the request is completed, or there will be memory leaks.
+     */
     interface PendingRequest {
+        /** The ID of the request. */
         val id: String
+
+        /** Information about the server, if available. */
         var server: Device?
+
+        /** Information about the client, if available. */
         var client: Device?
+
+        /** A [BufferedSink] that you can write the request body to, if available.*/
         val requestBody: BufferedSink
+
+        /** A [BufferedSink] that you can write the response body to, if available.*/
         val responseBody: BufferedSink
 
-        @Throws(IOException::class)
+        /** Discards this request. This will delete all data associated with the request. */
         fun discard()
 
-        @Throws(IOException::class)
+        /**
+         * Marks the request as completed.
+         *
+         * @param response the response.
+         * @param timings the timings for the request, if available. If not provided the creation time of the
+         *   [PendingRequest] and now will be used as the total duration.
+         */
         fun onComplete(
             response: Response,
             timings: Timings? = null,
         )
 
-        @Throws(IOException::class)
+        /**
+         * Marks the request as having failed.
+         *
+         * @param error the error, if available.
+         * @param timings the timings for the request, if available. If not provided the creation time of the
+         *   [PendingRequest] and now will be used as the total duration.
+         */
         fun onFailed(
-            error: Throwable,
+            error: Throwable?,
             timings: Timings? = null,
         )
     }
@@ -202,11 +247,32 @@ interface Harbringer {
         val wait: Duration? = null,
         val receive: Duration? = null,
         val ssl: Duration? = null,
-    )
+    ) {
+        constructor(
+            total: Long,
+            blocked: Long? = null,
+            dns: Long? = null,
+            connect: Long? = null,
+            send: Long? = null,
+            wait: Long? = null,
+            receive: Long? = null,
+            ssl: Long? = null,
+        ) : this(
+            total = total.milliseconds,
+            blocked = blocked?.milliseconds,
+            dns = dns?.milliseconds,
+            connect = connect?.milliseconds,
+            send = send?.milliseconds,
+            wait = wait?.milliseconds,
+            receive = receive?.milliseconds,
+            ssl = ssl?.milliseconds,
+        )
+    }
 
     @Suppress("JavaDefaultMethodsNotOverriddenByDelegation")
     data class Headers(val values: List<Header>) : List<Header> by values {
         constructor(vararg values: Pair<String, String>) : this(values.map { Header(it.first, it.second) })
+
         operator fun get(name: String): String? = values.lastOrNull { it.name.equals(name, ignoreCase = true) }?.value
     }
 

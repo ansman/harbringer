@@ -1,13 +1,6 @@
 plugins {
-    id("library-jvm")
-}
-
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.addAll(
-            "-Xopt-in=se.ansman.harbringer.internal.InternalRequestLoggerApi",
-        )
-    }
+    kotlin("jvm")
+    id("published-library")
 }
 
 dependencies {

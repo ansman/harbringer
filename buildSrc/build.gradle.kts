@@ -1,4 +1,5 @@
 plugins {
+    kotlin("jvm") version embeddedKotlinVersion
     `kotlin-dsl`
 }
 
@@ -7,6 +8,8 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.kotlinGradlePlugin)
+    api(libs.kotlinGradlePlugin)
+    api(libs.gradleMavenPublish)
+    api(libs.dokka.gradlePlugin)
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
 }

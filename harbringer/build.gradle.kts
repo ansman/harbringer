@@ -1,10 +1,8 @@
 plugins {
     kotlin("multiplatform")
+    id("published-library")
     alias(libs.plugins.kotlin.plugin.serialization)
 }
-
-group = "se.ansman.harexporter"
-version = "0.1.0"
 
 val generateRequestLoggerMetadata by tasks.registering {
     val metadataOutput = layout.buildDirectory.dir("generated/$name/kotlin")
@@ -12,24 +10,17 @@ val generateRequestLoggerMetadata by tasks.registering {
     inputs.property("version", version)
     outputs.dir(metadataOutput)
     doFirst {
-        metadataOutput.get().file("RequestLoggerMetadata.kt").asFile.writeText(
+        metadataOutput.get().file("HarbringerVersion.kt").asFile.writeText(
             """
-            package se.ansman.requestlogger.internal
+            package se.ansman.harbringer.internal
 
-            internal const val VERSION = "$version"
+            internal const val HARBRINGER_VERSION = "$version"
             """.trimIndent()
         )
     }
 }
 
 kotlin {
-    compilerOptions {
-        freeCompilerArgs.addAll(
-            "-Xexpect-actual-classes",
-            "-Xopt-in=se.ansman.harbringer.internal.InternalRequestLoggerApi",
-        )
-    }
-
     sourceSets {
         commonMain {
             kotlin.srcDir(generateRequestLoggerMetadata)
@@ -45,6 +36,5 @@ dependencies {
     commonMainImplementation(libs.kotlinx.serialization.json.okio)
 
     commonTestImplementation(kotlin("test"))
-    commonTestImplementation(libs.assertk)
     commonTestImplementation(libs.okio.fakeFileSystem)
 }

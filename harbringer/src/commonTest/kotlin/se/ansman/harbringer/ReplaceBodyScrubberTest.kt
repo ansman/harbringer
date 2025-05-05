@@ -8,15 +8,22 @@ import assertk.assertions.prop
 import okio.Buffer
 import okio.Sink
 import okio.Timeout
+import se.ansman.harbringer.scrubber.Scrubber
 import kotlin.test.Test
 
 class ReplaceBodyScrubberTest {
+    private val request = Harbringer.Request(
+        method = "GET",
+        url = "https://example.com",
+        headers = Harbringer.Headers(),
+        protocol = "HTTP/1.1",
+    )
     private val scrubber = Scrubber.replaceBody("******")
     private val sink = TestSink()
 
     @Test
     fun `writing is discarded`() {
-        val input = scrubber(sink)
+        val input = scrubber.scrub(request, sink)
         input.write("Secret")
         assertThat(sink).prop(TestSink::buffer).prop(Buffer::size).isZero()
         assertThat(sink).prop(TestSink::closeCount).isZero()
@@ -25,7 +32,7 @@ class ReplaceBodyScrubberTest {
 
     @Test
     fun `flush flushes the delegate`() {
-        val input = scrubber(sink)
+        val input = scrubber.scrub(request, sink)
         input.flush()
         assertThat(sink).prop(TestSink::buffer).prop(Buffer::size).isZero()
         assertThat(sink).prop(TestSink::closeCount).isZero()
@@ -34,7 +41,7 @@ class ReplaceBodyScrubberTest {
 
     @Test
     fun `close writes the data and closes the delegate`() {
-        val input = scrubber(sink)
+        val input = scrubber.scrub(request, sink)
         input.close()
         assertThat(sink.buffer.readUtf8()).isEqualTo("******")
         assertThat(sink).prop(TestSink::closeCount).isEqualTo(1)
@@ -43,7 +50,7 @@ class ReplaceBodyScrubberTest {
 
     @Test
     fun `close twice only writes the data once`() {
-        val input = scrubber(sink)
+        val input = scrubber.scrub(request, sink)
         input.close()
         input.close()
         assertThat(sink.buffer.readUtf8()).isEqualTo("******")
@@ -53,7 +60,7 @@ class ReplaceBodyScrubberTest {
 
     @Test
     fun `the delegates timeout is returned`() {
-        val input = scrubber(sink)
+        val input = scrubber.scrub(request, sink)
         assertThat(input).prop(Sink::timeout).isSameInstanceAs(sink.timeout())
     }
     

@@ -6,9 +6,9 @@ import kotlinx.serialization.json.okio.encodeToBufferedSink
 import okio.*
 import se.ansman.harbringer.Harbringer
 import se.ansman.harbringer.Harbringer.Request
-import se.ansman.harbringer.Scrubber
 import se.ansman.harbringer.internal.json.HarFile
 import se.ansman.harbringer.internal.json.toHarEntry
+import se.ansman.harbringer.scrubber.Scrubber
 import se.ansman.harbringer.storage.HarbringerStorage
 import se.ansman.requestlogger.internal.VERSION
 import kotlin.concurrent.Volatile
@@ -21,7 +21,7 @@ internal class RealHarbringer(
     private val maxDiskUsage: Int, // bytes
     @Volatile
     override var enabled: Boolean,
-    private val scrubber: (Request) -> Scrubber,
+    private val scrubber: Scrubber,
     private val clock: Clock = Clock.System,
 ) : Harbringer {
     init {
@@ -53,12 +53,15 @@ internal class RealHarbringer(
         }
     }
 
+    override fun clear() {
+        storage.clear()
+    }
+
     override fun record(request: Request): Harbringer.PendingRequest? {
         if (!enabled) {
             return null
         }
 
-        val scrubber = scrubber(request)
         val scrubbedRequest = scrubber.scrubRequest(request)
             ?: return NoOpPendingRequest()
         val id = randomUuid()
@@ -70,8 +73,10 @@ internal class RealHarbringer(
         )
     }
 
-    override fun exportHarArchive(sink: Sink) {
-        exportHarArchive(sink, Json)
+    override fun exportTo(sink: Sink, format: Harbringer.ExportFormat) {
+        when (format) {
+            Harbringer.ExportFormat.Har -> exportHarArchive(sink, Json)
+        }
     }
 
     fun exportHarArchive(sink: Sink, json: Json) {
@@ -82,7 +87,7 @@ internal class RealHarbringer(
                 log = HarFile.Log(
                     version = "1.2",
                     creator = HarFile.Creator(
-                        name = "se.ansman.request-logger",
+                        name = "Harbringer",
                         version = VERSION,
                         comment = "Exported at ${formatIso8601(clock.currentTime())}"
                     ),
@@ -121,7 +126,7 @@ internal class RealHarbringer(
             discard()
         }
 
-        override fun onFailed(error: Throwable, timings: Harbringer.Timings?) {
+        override fun onFailed(error: Throwable?, timings: Harbringer.Timings?) {
             discard()
         }
     }
@@ -137,10 +142,10 @@ internal class RealHarbringer(
         override var server: Harbringer.Device? = null
         override var client: Harbringer.Device? = null
         override val requestBody: BufferedSink = pendingEntry.requestBody
-            .let(scrubber::scrubRequestBody)
+            .let { sink -> scrubber.scrubRequestBody(request, sink) }
             .buffer()
         override val responseBody: BufferedSink = pendingEntry.responseBody
-            .let(scrubber::scrubResponseBody)
+            .let { sink -> scrubber.scrubResponseBody(request, sink) }
             .buffer()
 
         override fun discard() {
@@ -159,7 +164,7 @@ internal class RealHarbringer(
         }
 
         override fun onFailed(
-            error: Throwable,
+            error: Throwable?,
             timings: Harbringer.Timings?,
         ) {
             finalize(
@@ -181,7 +186,7 @@ internal class RealHarbringer(
             response: Harbringer.Response,
             timings: Harbringer.Timings?,
         ) {
-            val response = scrubber.scrubResponse(response)
+            val response = scrubber.scrubResponse(request, response)
             if (response == null) {
                 discard()
                 return
@@ -201,7 +206,7 @@ internal class RealHarbringer(
             cleanup()
         }
 
-        private fun Throwable.toResponse(request: Request): Harbringer.Response =
+        private fun Throwable?.toResponse(request: Request): Harbringer.Response =
             Harbringer.Response(
                 code = 999,
                 message = "Error",
@@ -211,7 +216,7 @@ internal class RealHarbringer(
                     byteCount = 0L,
                     contentType = "",
                 ),
-                error = message,
+                error = this?.message,
             )
     }
 }
