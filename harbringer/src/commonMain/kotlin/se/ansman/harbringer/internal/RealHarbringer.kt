@@ -10,7 +10,6 @@ import se.ansman.harbringer.internal.json.HarFile
 import se.ansman.harbringer.internal.json.toHarEntry
 import se.ansman.harbringer.scrubber.Scrubber
 import se.ansman.harbringer.storage.HarbringerStorage
-import se.ansman.requestlogger.internal.VERSION
 import kotlin.concurrent.Volatile
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -88,7 +87,7 @@ internal class RealHarbringer(
                     version = "1.2",
                     creator = HarFile.Creator(
                         name = "Harbringer",
-                        version = VERSION,
+                        version = HARBRINGER_VERSION,
                         comment = "Exported at ${formatIso8601(clock.currentTime())}"
                     ),
                     entries = storage.getIds().asSequence().map { id -> readHarEntry(id) }.asIterable()

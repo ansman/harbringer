@@ -10,13 +10,17 @@ val generateRequestLoggerMetadata by tasks.registering {
     inputs.property("version", version)
     outputs.dir(metadataOutput)
     doFirst {
-        metadataOutput.get().file("HarbringerVersion.kt").asFile.writeText(
-            """
-            package se.ansman.harbringer.internal
-
-            internal const val HARBRINGER_VERSION = "$version"
-            """.trimIndent()
-        )
+        with(metadataOutput.get()) {
+            asFile.deleteRecursively()
+            asFile.mkdirs()
+            file("HarbringerVersion.kt").asFile.writeText(
+                """
+                package se.ansman.harbringer.internal
+    
+                internal const val HARBRINGER_VERSION = "$version"
+                """.trimIndent()
+            )
+        }
     }
 }
 

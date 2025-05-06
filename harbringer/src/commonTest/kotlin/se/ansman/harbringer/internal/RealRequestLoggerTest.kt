@@ -15,7 +15,6 @@ import se.ansman.harbringer.Harbringer.Headers
 import se.ansman.harbringer.Harbringer.Request
 import se.ansman.harbringer.scrubber.Scrubber
 import se.ansman.harbringer.storage.FileSystemHarbringerStorage
-import se.ansman.requestlogger.internal.VERSION
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.random.Random
 import kotlin.test.Test
@@ -78,7 +77,7 @@ class RealRequestLoggerTest {
                 "version": "1.2",
                 "creator": {
                   "name": "Harbringer",
-                  "version": "$VERSION",
+                  "version": "$HARBRINGER_VERSION",
                   "comment": "Exported at 2025-04-27T20:59:12.123Z"
                 },
                 "entries": [{
@@ -236,7 +235,7 @@ class RealRequestLoggerTest {
                 "version": "1.2",
                 "creator": {
                   "name": "Harbringer",
-                  "version": "$VERSION",
+                  "version": "$HARBRINGER_VERSION",
                   "comment": "Exported at 2025-04-27T20:59:12.123Z"
                 },
                 "entries": [{
