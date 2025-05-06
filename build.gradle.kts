@@ -14,13 +14,6 @@ val version: String = providers.gradleProperty("version").get()
 val latestRelease: String = providers.gradleProperty("latestRelease").get()
 
 val isSnapshotVersion = version.endsWith("-SNAPSHOT")
-val dokkaProjects = subprojects
-    .map { it.isolated }
-    .filter { ":compiler" !in it.path && ":tests" !in it.path }
-    .toSet()
-
-apiValidation {
-}
 
 val dokkaDocsPath = "dokka"
 
