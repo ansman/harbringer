@@ -1,7 +1,42 @@
 # Harbringer
-Harbringer is a HTTP request logger. It can store your network requests and let you inspect or export them.
+Harbringer is an HTTP request logger. It can store your network requests and let you inspect or export them.
 
 It supports OkHttp out of the box, but you can use it with any HTTP client.
+
+To read more, please refer to the [documentation](https://harbringer.ansman.se/).
+
+For the changelog, see the [releases page](https://github.com/ansman/harbringer/releases).
+
+## Basic usage
+```kotlin
+val harbringer = Harbringer(
+    storage = FileSystemHarbringerStorage(storageDirectory.toPath()),
+    maxRequests = 1000, // 1000 requests
+    maxDiskSize = 100 * 1024 * 1024, // 100MB
+    maxAge = 2.days,
+)
+
+val okHttpClient = OkHttpClient.Builder()
+    .addHarbringer(harbringer)
+    .build()
+
+outputFile.sink().use { sink ->
+    harbringer.exportTo(sink)
+}
+```
+
+For the full documentation see https://harbringer.ansman.se/
+
+Setup
+---
+For detailed instructions, see the [getting-started](https://harbringer.ansman.se/latest/getting-started/) page.
+```kotlin
+dependencies {
+    implementation("se.ansman.harbringer:harbringer:0.1.0")
+    // If using okhttp
+    implementation("se.ansman.harbringer:harbringer-okhttp3:0.1.0")
+}
+```
 
 ## License
 
