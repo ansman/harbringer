@@ -11,6 +11,9 @@ It can support any HTTP client, but for now it supports:
 
 - [OkHttp](okhttp.md)
 
+You can find the project on GitHub in the [ansman/harbringer](https://github.com/ansman/harbringer) repo.
+
+If you're looking javadoc/dokka you can find it [here]({{ gradle.dokkaLink }}).
 
 ## Getting started
 You can add Harbringer to your project using Gradle:

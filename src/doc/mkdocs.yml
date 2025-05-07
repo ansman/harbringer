@@ -112,6 +112,7 @@ nav:
   - Scrubbing: scrubbing.md
   - OkHttp: okhttp.md
   - Logging Requests: logging-requests.md
+  - API Docs: https://harbringer.ansman.se/dokka/
   - About:
       - Release Notes: https://github.com/ansman/harbringer/releases
       - License: about/license.md
