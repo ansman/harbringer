@@ -95,6 +95,12 @@ interface Harbringer {
     @Throws(IOException::class)
     fun exportTo(sink: Sink, format: ExportFormat = ExportFormat.Har)
 
+    /** Adds a [Listener] to be notified of changes to the Harbringer. */
+    fun addListener(listener: Listener)
+
+    /** Removes a [Listener] to be notified of changes to the Harbringer. */
+    fun removeListener(listener: Listener)
+
     companion object {
         /**
          * Creates a new [Harbringer] with the given [storage], [maxRequests], and [maxDiskUsage].
@@ -220,6 +226,52 @@ interface Harbringer {
             error: Throwable?,
             timings: Timings? = null,
         )
+    }
+
+    /**
+     * A listener that is notified of changes to the Harbringer.
+     *
+     * The callbacks will be called on whatever thread that performed the action and is likely blocking a network call
+     * so implementations should be lock free and fast.
+     */
+    interface Listener {
+        /**
+         * Called when a request is started.
+         *
+         * Will be followed by exactly one of [onRequestCompleted], [onRequestFailed], or [onRequestDiscarded].
+         */
+        fun onRecordingStarted(request: Request) {}
+
+        /**
+         * Called when a request is discarded.
+         *
+         * This will be called if the request is discarded before it is completed or if it was removed by a scrubber.
+         */
+        fun onRequestDiscarded(request: Request) {}
+
+        /**
+         * Called when a request is completed.
+         *
+         * This will be called if the request is completed successfully (even if the HTTP status code is not 2xx).
+         */
+        fun onRequestCompleted(entry: Entry) {}
+
+        /**
+         * Called when a request fails.
+         *
+         * This will be called if the request fails with an error. For example, a network error.
+         */
+        fun onRequestFailed(entry: Entry, error: Throwable?) {}
+
+        /**
+         * Called when a request is deleted.
+         *
+         * This will be called if the request is deleted by the user or by the scrubber.
+         */
+        fun onEntryDeleted(id: String) {}
+
+        /** Called when the logger is cleared. */
+        fun onCleared() {}
     }
 
     data class Entry(

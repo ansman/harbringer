@@ -1,14 +1,17 @@
 public abstract interface class se/ansman/harbringer/Harbringer {
 	public static final field Companion Lse/ansman/harbringer/Harbringer$Companion;
+	public abstract fun addListener (Lse/ansman/harbringer/Harbringer$Listener;)V
 	public abstract fun clear ()V
 	public abstract fun deleteEntry (Ljava/lang/String;)V
 	public abstract fun exportTo (Lokio/Sink;Lse/ansman/harbringer/Harbringer$ExportFormat;)V
+	public static synthetic fun exportTo$default (Lse/ansman/harbringer/Harbringer;Lokio/Sink;Lse/ansman/harbringer/Harbringer$ExportFormat;ILjava/lang/Object;)V
 	public abstract fun getEnabled ()Z
 	public abstract fun getEntry (Ljava/lang/String;)Lse/ansman/harbringer/Harbringer$Entry;
 	public abstract fun getIds ()Ljava/util/Set;
 	public abstract fun getRequestBody (Ljava/lang/String;)Lokio/Source;
 	public abstract fun getResponseBody (Ljava/lang/String;)Lokio/Source;
 	public abstract fun record (Lse/ansman/harbringer/Harbringer$Request;)Lse/ansman/harbringer/Harbringer$PendingRequest;
+	public abstract fun removeListener (Lse/ansman/harbringer/Harbringer$Listener;)V
 	public abstract fun setEnabled (Z)V
 }
 
@@ -21,10 +24,6 @@ public final class se/ansman/harbringer/Harbringer$Companion {
 	public final fun invoke-gwCluXo (Lse/ansman/harbringer/storage/HarbringerStorage;IJJZLse/ansman/harbringer/scrubber/Scrubber;)Lse/ansman/harbringer/Harbringer;
 	public static synthetic fun invoke-gwCluXo$default (Lse/ansman/harbringer/Harbringer$Companion;Lse/ansman/harbringer/storage/HarbringerStorage;IJJZLse/ansman/harbringer/scrubber/Scrubber;ILjava/lang/Object;)Lse/ansman/harbringer/Harbringer;
 	public final fun invoke-zkXUZaI (Lse/ansman/harbringer/storage/HarbringerStorage;IJJZ)Lse/ansman/harbringer/Harbringer;
-}
-
-public final class se/ansman/harbringer/Harbringer$DefaultImpls {
-	public static synthetic fun exportTo$default (Lse/ansman/harbringer/Harbringer;Lokio/Sink;Lse/ansman/harbringer/Harbringer$ExportFormat;ILjava/lang/Object;)V
 }
 
 public final class se/ansman/harbringer/Harbringer$Device {
@@ -143,6 +142,15 @@ public final class se/ansman/harbringer/Harbringer$Headers : java/util/List, kot
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class se/ansman/harbringer/Harbringer$Listener {
+	public fun onCleared ()V
+	public fun onEntryDeleted (Ljava/lang/String;)V
+	public fun onRecordingStarted (Lse/ansman/harbringer/Harbringer$Request;)V
+	public fun onRequestCompleted (Lse/ansman/harbringer/Harbringer$Entry;)V
+	public fun onRequestDiscarded (Lse/ansman/harbringer/Harbringer$Request;)V
+	public fun onRequestFailed (Lse/ansman/harbringer/Harbringer$Entry;Ljava/lang/Throwable;)V
+}
+
 public abstract interface class se/ansman/harbringer/Harbringer$PendingRequest {
 	public abstract fun discard ()V
 	public abstract fun getClient ()Lse/ansman/harbringer/Harbringer$Device;
@@ -151,14 +159,11 @@ public abstract interface class se/ansman/harbringer/Harbringer$PendingRequest {
 	public abstract fun getResponseBody ()Lokio/BufferedSink;
 	public abstract fun getServer ()Lse/ansman/harbringer/Harbringer$Device;
 	public abstract fun onComplete (Lse/ansman/harbringer/Harbringer$Response;Lse/ansman/harbringer/Harbringer$Timings;)V
+	public static synthetic fun onComplete$default (Lse/ansman/harbringer/Harbringer$PendingRequest;Lse/ansman/harbringer/Harbringer$Response;Lse/ansman/harbringer/Harbringer$Timings;ILjava/lang/Object;)V
 	public abstract fun onFailed (Ljava/lang/Throwable;Lse/ansman/harbringer/Harbringer$Timings;)V
+	public static synthetic fun onFailed$default (Lse/ansman/harbringer/Harbringer$PendingRequest;Ljava/lang/Throwable;Lse/ansman/harbringer/Harbringer$Timings;ILjava/lang/Object;)V
 	public abstract fun setClient (Lse/ansman/harbringer/Harbringer$Device;)V
 	public abstract fun setServer (Lse/ansman/harbringer/Harbringer$Device;)V
-}
-
-public final class se/ansman/harbringer/Harbringer$PendingRequest$DefaultImpls {
-	public static synthetic fun onComplete$default (Lse/ansman/harbringer/Harbringer$PendingRequest;Lse/ansman/harbringer/Harbringer$Response;Lse/ansman/harbringer/Harbringer$Timings;ILjava/lang/Object;)V
-	public static synthetic fun onFailed$default (Lse/ansman/harbringer/Harbringer$PendingRequest;Ljava/lang/Throwable;Lse/ansman/harbringer/Harbringer$Timings;ILjava/lang/Object;)V
 }
 
 public final class se/ansman/harbringer/Harbringer$Request {
@@ -362,7 +367,6 @@ public final class se/ansman/harbringer/storage/FileSystemHarbringerStorage : se
 	public static final field Companion Lse/ansman/harbringer/storage/FileSystemHarbringerStorage$Companion;
 	public fun <init> (Lokio/Path;Lokio/FileSystem;)V
 	public synthetic fun <init> (Lokio/Path;Lokio/FileSystem;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun clear ()V
 	public fun deleteEntry (Ljava/lang/String;)Lse/ansman/harbringer/storage/HarbringerStorage$StoredEntry;
 	public fun deleteOldestEntry ()Lse/ansman/harbringer/storage/HarbringerStorage$StoredEntry;
 	public fun getBytesStored ()J
@@ -380,7 +384,7 @@ public final class se/ansman/harbringer/storage/FileSystemHarbringerStorage$Comp
 }
 
 public abstract interface class se/ansman/harbringer/storage/HarbringerStorage {
-	public abstract fun clear ()V
+	public fun clear ()V
 	public abstract fun deleteEntry (Ljava/lang/String;)Lse/ansman/harbringer/storage/HarbringerStorage$StoredEntry;
 	public abstract fun deleteOldestEntry ()Lse/ansman/harbringer/storage/HarbringerStorage$StoredEntry;
 	public abstract fun getBytesStored ()J
@@ -392,10 +396,6 @@ public abstract interface class se/ansman/harbringer/storage/HarbringerStorage {
 	public abstract fun readRequestBody (Ljava/lang/String;)Lokio/Source;
 	public abstract fun readResponseBody (Ljava/lang/String;)Lokio/Source;
 	public abstract fun store (Ljava/lang/String;)Lse/ansman/harbringer/storage/HarbringerStorage$PendingEntry;
-}
-
-public final class se/ansman/harbringer/storage/HarbringerStorage$DefaultImpls {
-	public static fun clear (Lse/ansman/harbringer/storage/HarbringerStorage;)V
 }
 
 public abstract interface class se/ansman/harbringer/storage/HarbringerStorage$PendingEntry {
@@ -425,7 +425,6 @@ public final class se/ansman/harbringer/storage/HarbringerStorage$StoredEntry : 
 
 public final class se/ansman/harbringer/storage/InMemoryHarbringerStorage : se/ansman/harbringer/storage/HarbringerStorage {
 	public fun <init> ()V
-	public fun clear ()V
 	public fun deleteEntry (Ljava/lang/String;)Lse/ansman/harbringer/storage/HarbringerStorage$StoredEntry;
 	public fun deleteOldestEntry ()Lse/ansman/harbringer/storage/HarbringerStorage$StoredEntry;
 	public fun getBytesStored ()J

@@ -5,6 +5,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.okio.encodeToBufferedSink
 import okio.*
 import se.ansman.harbringer.Harbringer
+import se.ansman.harbringer.Harbringer.Listener
 import se.ansman.harbringer.Harbringer.Request
 import se.ansman.harbringer.internal.atomic.newLock
 import se.ansman.harbringer.internal.atomic.tryWithLock
@@ -28,6 +29,8 @@ internal class RealHarbringer(
     private val scrubber: Scrubber,
     private val clock: Clock = Clock.System,
 ) : Harbringer {
+    private val listenersLock = newLock()
+    private var listeners = emptyArray<Listener>()
     private val exportLock = newLock()
 
     init {
@@ -50,8 +53,13 @@ internal class RealHarbringer(
     override fun getEntry(id: String): Harbringer.Entry? = storage.getEntry(id)
 
     override fun deleteEntry(id: String) {
-        exportLock.withLock {
+        val entry = exportLock.withLock {
             storage.deleteEntry(id)
+        }
+        if (entry != null) {
+            for (listener in listeners) {
+                listener.onEntryDeleted(id)
+            }
         }
     }
 
@@ -60,6 +68,7 @@ internal class RealHarbringer(
     override fun getResponseBody(id: String): Source? = storage.readResponseBody(id)
 
     private fun cleanup() {
+        var deletedEntries: MutableList<HarbringerStorage.StoredEntry>? = null
         exportLock.tryWithLock {
             while (storage.entriesStored > maxRequests || storage.bytesStored > maxDiskUsage) {
                 if (storage.deleteOldestEntry() == null) {
@@ -69,10 +78,18 @@ internal class RealHarbringer(
             while (true) {
                 val oldestEntry = storage.getOldestEntryMetadata() ?: break
                 if ((clock.currentTime() - oldestEntry.startedAt).milliseconds > maxAge) {
-                    storage.deleteEntry(oldestEntry.id)
+                    storage.deleteEntry(oldestEntry.id)?.let { entry ->
+                        (deletedEntries ?: mutableListOf<HarbringerStorage.StoredEntry>().also { deletedEntries = it })
+                            .add(entry)
+                    }
                 } else {
                     break
                 }
+            }
+        }
+        deletedEntries?.forEach {
+            for (listener in listeners) {
+                listener.onEntryDeleted(it.id)
             }
         }
     }
@@ -80,6 +97,9 @@ internal class RealHarbringer(
     override fun clear() {
         exportLock.withLock {
             storage.clear()
+        }
+        for (listener in listeners) {
+            listener.onCleared()
         }
     }
 
@@ -91,6 +111,9 @@ internal class RealHarbringer(
         val scrubbedRequest = scrubber.scrubRequest(request)
             ?: return NoOpPendingRequest()
         val id = randomUuid()
+        for (listener in listeners) {
+            listener.onRecordingStarted(request)
+        }
         return PendingRequest(
             pendingEntry = storage.store(id),
             scrubber = scrubber,
@@ -107,6 +130,20 @@ internal class RealHarbringer(
             }
         }
         cleanup()
+    }
+
+    override fun addListener(listener: Listener) {
+        listenersLock.withLock {
+            if (listener !in listeners) {
+                listeners = listeners + listener
+            }
+        }
+    }
+
+    override fun removeListener(listener: Listener) {
+        listenersLock.withLock {
+            listeners = (listeners.asList() - listener).toTypedArray()
+        }
     }
 
     fun exportHarArchive(sink: Sink, json: Json) {
@@ -179,6 +216,11 @@ internal class RealHarbringer(
             .buffer()
 
         override fun discard() {
+            if (!isClosed) {
+                for (listener in listeners) {
+                    listener.onRequestDiscarded(request)
+                }
+            }
             finalize(allowClosed = true)
             pendingEntry.discard()
         }
@@ -187,20 +229,30 @@ internal class RealHarbringer(
             response: Harbringer.Response,
             timings: Harbringer.Timings?
         ) {
-            finalize(
+            val entry = finalize(
                 response = response,
                 timings = timings,
             )
+            if (entry != null) {
+                for (listener in listeners) {
+                    listener.onRequestCompleted(entry)
+                }
+            }
         }
 
         override fun onFailed(
             error: Throwable?,
             timings: Harbringer.Timings?,
         ) {
-            finalize(
+            val entry = finalize(
                 response = error.toResponse(request),
                 timings = timings,
             )
+            if (entry != null) {
+                for (listener in listeners) {
+                    listener.onRequestFailed(entry, error)
+                }
+            }
         }
 
         private fun finalize(allowClosed: Boolean = false) {
@@ -215,25 +267,26 @@ internal class RealHarbringer(
         private fun finalize(
             response: Harbringer.Response,
             timings: Harbringer.Timings?,
-        ) {
+        ): Harbringer.Entry? {
             val response = scrubber.scrubResponse(request, response)
             if (response == null) {
                 discard()
-                return
+                return null
             }
             finalize()
-            pendingEntry.write(
-                Harbringer.Entry(
-                    id = id,
-                    request = request,
-                    response = response,
-                    startedAt = startedAt,
-                    server = server,
-                    client = client,
-                    timings = (timings ?: Harbringer.Timings((clock.currentTime() - startedAt).milliseconds))
-                )
+
+            val entry = Harbringer.Entry(
+                id = id,
+                request = request,
+                response = response,
+                startedAt = startedAt,
+                server = server,
+                client = client,
+                timings = (timings ?: Harbringer.Timings((clock.currentTime() - startedAt).milliseconds))
             )
+            pendingEntry.write(entry)
             cleanup()
+            return entry
         }
 
         private fun Throwable?.toResponse(request: Request): Harbringer.Response =

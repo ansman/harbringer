@@ -27,6 +27,7 @@ afterEvaluate {
             compilerOptions {
                 freeCompilerArgs.addAll(
                     "-opt-in=se.ansman.harbringer.internal.InternalRequestLoggerApi",
+                    "-Xjvm-default=all",
                 )
             }
         }
