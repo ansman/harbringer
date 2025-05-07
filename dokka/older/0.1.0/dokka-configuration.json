@@ -1,0 +1,50 @@
+{
+  "moduleName": "harbringer",
+  "moduleVersion": "0.1.0",
+  "outputDir": "/Users/nicklas/Repositories/personal/harbringer/build/dokka/html",
+  "cacheRoot": null,
+  "offlineMode": false,
+  "sourceSets": [
+  ],
+  "pluginsClasspath": [
+    "/Users/nicklas/.gradle/caches/modules-2/files-2.1/org.jetbrains.dokka/templating-plugin/2.0.0/2c817817579cd8c92ded6f33fd9e6b746ecf01c7/templating-plugin-2.0.0.jar",
+    "/Users/nicklas/.gradle/caches/modules-2/files-2.1/org.jetbrains.dokka/dokka-base/2.0.0/dcce26b10e9af3b3f2eba0403d6a9561e6da9098/dokka-base-2.0.0.jar",
+    "/Users/nicklas/.gradle/caches/modules-2/files-2.1/org.jetbrains.dokka/all-modules-page-plugin/2.0.0/f00f3af81550dbbb769c159c70ab4cadab8fb2c/all-modules-page-plugin-2.0.0.jar",
+    "/Users/nicklas/.gradle/caches/modules-2/files-2.1/org.jetbrains.dokka/versioning-plugin/2.0.0/7f5bb6094406f4cb83693b9511e05e6c2457ed58/versioning-plugin-2.0.0.jar"
+  ],
+  "pluginsConfiguration": [
+    {
+      "fqPluginName": "org.jetbrains.dokka.base.DokkaBase",
+      "serializationFormat": "JSON",
+      "values": "{\"customAssets\":[],\"customStyleSheets\":[],\"separateInheritedMembers\":false,\"mergeImplicitExpectActualDeclarations\":false}"
+    },
+    {
+      "fqPluginName": "org.jetbrains.dokka.versioning.VersioningPlugin",
+      "serializationFormat": "JSON",
+      "values": "{\"version\":\"0.1.0\",\"olderVersionsDir\":\"/Users/nicklas/Repositories/personal/harbringer/src/doc/dokka\",\"olderVersions\":[],\"renderVersionsNavigationOnAllPages\":true}"
+    }
+  ],
+  "modules": [
+    {
+      "name": "harbringer",
+      "relativePathToOutputDirectory": "harbringer",
+      "includes": [
+      ],
+      "sourceOutputDirectory": "/Users/nicklas/Repositories/personal/harbringer/harbringer/build/dokka-module/html/module"
+    },
+    {
+      "name": "okhttp3",
+      "relativePathToOutputDirectory": "harbringer/okhttp3",
+      "includes": [
+      ],
+      "sourceOutputDirectory": "/Users/nicklas/Repositories/personal/harbringer/harbringer/okhttp3/build/dokka-module/html/module"
+    }
+  ],
+  "failOnWarning": false,
+  "delayTemplateSubstitution": false,
+  "suppressObviousFunctions": true,
+  "includes": [
+  ],
+  "suppressInheritedMembers": false,
+  "finalizeCoroutines": false
+}

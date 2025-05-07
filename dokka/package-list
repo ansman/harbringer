@@ -1,0 +1,10 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+
+module:harbringer
+se.ansman.harbringer
+se.ansman.harbringer.internal
+se.ansman.harbringer.scrubber
+se.ansman.harbringer.storage
+module:okhttp3
+se.ansman.harbringer.okhttp3

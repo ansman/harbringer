@@ -1,0 +1,1 @@
+sourceset_dependencies = '{":harbringer:okhttp3/main":[],":harbringer/commonMain":[],":harbringer/jvmMain":[":harbringer/commonMain"]}'
