@@ -8,6 +8,8 @@ val harbringer = Harbringer(
     maxRequests = 1000,
     // Store up to 100MB of requests
     maxDiskSize = 100 * 1024 * 1024,
+    // Store up to 2 days worth of logs
+    maxAge = 2.days,
 )
 ```
 
