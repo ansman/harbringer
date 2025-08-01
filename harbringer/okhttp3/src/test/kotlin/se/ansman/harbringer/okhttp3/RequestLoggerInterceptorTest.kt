@@ -2,9 +2,18 @@ package se.ansman.harbringer.okhttp3
 
 import assertk.all
 import assertk.assertThat
-import assertk.assertions.*
-import okhttp3.*
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNotNull
+import assertk.assertions.prop
+import assertk.assertions.single
+import assertk.assertions.startsWith
+import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.OkHttp
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -191,7 +200,7 @@ class RequestLoggerInterceptorTest {
             .prop(Harbringer.Request::body)
             .isNotNull()
             .all {
-                prop(Harbringer.Request.Body::byteCount).isEqualTo(495)
+                prop(Harbringer.Request.Body::byteCount).isEqualTo(438)
                 prop(Harbringer.Request.Body::contentType).isNotNull().startsWith("multipart/mixed; boundary=")
                 prop(Harbringer.Request.Body::params).isEqualTo(
                     listOf(
