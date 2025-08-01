@@ -3,7 +3,13 @@ package se.ansman.harbringer.internal
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.okio.encodeToBufferedSink
-import okio.*
+import okio.BufferedSink
+import okio.FileNotFoundException
+import okio.Sink
+import okio.Source
+import okio.blackholeSink
+import okio.buffer
+import okio.use
 import se.ansman.harbringer.Harbringer
 import se.ansman.harbringer.Harbringer.Listener
 import se.ansman.harbringer.Harbringer.Request
@@ -17,8 +23,9 @@ import se.ansman.harbringer.storage.HarbringerStorage
 import kotlin.concurrent.Volatile
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class, ExperimentalTime::class)
 internal class RealHarbringer(
     private val storage: HarbringerStorage,
     private val maxRequests: Int,
