@@ -2,7 +2,6 @@ import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinJvm
 import com.vanniktech.maven.publish.KotlinMultiplatform
-import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.accessors.dm.LibrariesForLibs
 
 plugins {
@@ -28,7 +27,7 @@ tasks.withType<AbstractPublishToMaven>().configureEach {
 val signArtifacts = providers.gradleProperty("signArtifacts").orNull?.toBooleanStrict() ?: false
 mavenPublishing {
     val version = providers.gradleProperty("version").get()
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
 
     if (signArtifacts) {
         signAllPublications()
