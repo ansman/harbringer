@@ -32,7 +32,7 @@ class RealHarbringerTest {
     }
     val storage = FileSystemHarbringerStorage(
         root = "/".toPath(),
-        fileSystem = FakeFileSystem(clock.dateTimeClock),
+        fileSystem = FakeFileSystem(clock.kotlinClock),
         json = json,
         rethrowErrors = true
     )
