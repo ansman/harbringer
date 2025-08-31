@@ -9,11 +9,13 @@ build/
 .idea/modules.xml
 .idea/misc.xml
 .idea/gradle.xml
+.idea/kotlinc.xml
 .idea/caches
 .idea/runConfigurations.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea/artifacts/
 *.iws
 *.iml
 *.ipr
@@ -48,3 +50,5 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+local.properties

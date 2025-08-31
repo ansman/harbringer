@@ -5,6 +5,9 @@ plugins {
 
 kotlin {
     jvmToolchain(libs.versions.java.get().toInt())
+    compilerOptions {
+        allWarningsAsErrors = true
+    }
 }
 
 dependencies {
