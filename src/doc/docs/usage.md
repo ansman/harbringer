@@ -18,7 +18,7 @@ Harbringer ships with two storage implementations; `FileSystemHarbringerStorage`
 The former stores requests on disk, while the latter stores them in memory. You can also implement your own storage by 
 implementing the `HarbringerStorage` interface.
 
-Please bear in mind that the storage my be thread safe so implementing it can be challenging.
+Please bear in mind that the storage must be thread safe so implementing it can be challenging.
 
 ## Exporting
 You can export the requests to a file using the `exportTo` method:
