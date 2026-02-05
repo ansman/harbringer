@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.2.21"
+kotlin = "2.3.10"
 okhttp3 = "5.3.1"
 okio = "3.16.3"
 java = "22"
