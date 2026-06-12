@@ -1,13 +1,13 @@
 [versions]
-kotlin = "2.2.21"
+kotlin = "2.3.21"
 okhttp3 = "5.3.1"
-okio = "3.16.3"
+okio = "3.17.0"
 java = "22"
 junit = "5.13.4"
-kotlinx-serialization = "1.9.0"
+kotlinx-serialization = "1.11.0"
 assertk = "0.28.1"
 gradleMavenPublish = "0.36.0"
-dokka = "2.1.0"
+dokka = "2.2.0"
 
 [plugins]
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
