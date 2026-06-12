@@ -2,6 +2,7 @@ import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinJvm
 import com.vanniktech.maven.publish.KotlinMultiplatform
+import com.vanniktech.maven.publish.SourcesJar
 import org.gradle.accessors.dm.LibrariesForLibs
 
 plugins {
@@ -88,7 +89,7 @@ pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
         configure(
             KotlinJvm(
                 javadocJar = JavadocJar.Dokka(tasks.dokkaGeneratePublicationJavadoc.name),
-                sourcesJar = true
+                sourcesJar = SourcesJar.Sources()
             )
         )
     }
@@ -99,7 +100,7 @@ pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
         configure(
             KotlinMultiplatform(
                 javadocJar = JavadocJar.Dokka(tasks.dokkaGeneratePublicationJavadoc.name),
-                sourcesJar = true
+                sourcesJar = SourcesJar.Sources()
             )
         )
     }
