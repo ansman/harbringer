@@ -11,7 +11,7 @@ dokka = "2.2.0"
 
 [plugins]
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-binaryCompatibilityValidator = "org.jetbrains.kotlinx.binary-compatibility-validator:0.18.1"
+binaryCompatibilityValidator = "org.jetbrains.kotlinx.binary-compatibility-validator:0.18.2"
 mkdocs = "ru.vyarus.mkdocs:4.0.1"
 
 [libraries]
