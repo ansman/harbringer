@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.4.21"
-okhttp3 = "5.5.0"
+okhttp3 = "5.5.1"
 okio = "3.18.2"
 java = "22"
 junit = "6.1.3"
